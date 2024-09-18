@@ -14,11 +14,10 @@ import {
 } from "aws-cdk-lib/core";
 import {
   Role,
-  Effect,
-  PolicyStatement,
   AccountPrincipal,
   ServicePrincipal,
   CompositePrincipal,
+  IRole,
 } from "aws-cdk-lib/aws-iam";
 import {
   ViewerProtocolPolicy,
@@ -635,6 +634,7 @@ type ServiceNormalizedProps = ServiceProps & {
   memory: Exclude<ServiceProps["memory"], undefined>;
   storage: Exclude<ServiceProps["storage"], undefined>;
   logRetention: Exclude<ServiceProps["logRetention"], undefined>;
+  taskRole?: IRole
 };
 
 /**
@@ -987,7 +987,7 @@ export class Service extends Construct implements SSTConstruct {
   }
 
   private createService(cluster: ICluster) {
-    const { architecture, cpu, memory, storage, port, logRetention, cdk } =
+    const { architecture, cpu, memory, storage, port, logRetention, cdk, taskRole } =
       this.props;
     const app = this.node.root as App;
 
@@ -1015,6 +1015,7 @@ export class Service extends Construct implements SSTConstruct {
             ? CpuArchitecture.ARM64
             : CpuArchitecture.X86_64,
       },
+      taskRole
     });
 
     const container = taskDefinition.addContainer("Container", {
